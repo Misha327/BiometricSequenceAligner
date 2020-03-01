@@ -41,32 +41,23 @@ public class Main {
     *
     * */
     public void buildMatrix() {
-        int[][] matrix = new int[firstSeq.length()+1][secondSeq.length()+1];
+        int[][] matrix = new int[secondSeq.length()+1][firstSeq.length()+1];
         matrix[0][0] = 0;
         int x = 0;
         int y = 0;
-        for (int i = 1; i <= firstSeq.length(); i++) {
+        for (int i = 1; i <= secondSeq.length(); i++) {
             matrix[i][0] = i * gapPenalty;
-
-            if (i <= secondSeq.length()) {
-                matrix[0][i] = i * gapPenalty;
-            }
         }
         for (int i = 1; i <= firstSeq.length(); i++) {
-            for (int j = 1; j <= secondSeq.length(); j++) {
-                int asciiFirst = (int) firstSeq.charAt(i-1);
-                int asciiSecond = (int) secondSeq.charAt(j-1);
+            matrix[0][i] = i * gapPenalty;
+        }
+        for (int i = 1; i <= secondSeq.length(); i++) {
+            for (int j = 1; j <= firstSeq.length(); j++) {
+                int asciiFirst = (int) firstSeq.charAt(j-1);
+                int asciiSecond = (int) secondSeq.charAt(i-1);
 
                 //Find the score coordinates
-                for (int k = 0; k < matrixLocation.length; k++) {
-                    if (matrixLocation[k] == asciiFirst) {
-                        x = k;
-                    }
-                    if (matrixLocation[k] == asciiSecond) {
-                        y = k;
-                    }
-                }
-                int score = blosum62[x][y];
+                int score = findScore(asciiFirst, asciiSecond);
 
                 int sum = score + matrix[i-1][j-1];
                 int right = matrix[i-1][j] + gapPenalty;
@@ -80,13 +71,53 @@ public class Main {
                     matrix[i][j] = right;
                 }
                 else matrix[i][j] = down;
-
             }
-
             }
-
-
         this.matrix = matrix;
+    }
+
+    public String[] traceback() {
+        String alignedA = "";
+        String alignedB = "";
+        int i = secondSeq.length();
+        int j = firstSeq.length();
+        while (i > 0 || j > 0){
+
+            if (i > 0 && j > 0 && matrix[i][j] == (matrix[i-1][j-1] + findScore((int)firstSeq.charAt(j), (int)secondSeq.charAt(i)))) {
+                alignedA = alignedA + firstSeq.charAt(j);
+                alignedB = alignedB + secondSeq.charAt(i);
+                i--;
+                j--;
+            }
+            else if (i > 0 && matrix[i-1][j] == matrix[i][j] - gapPenalty) {
+                alignedA = firstSeq.charAt(i) + alignedA;
+                alignedB = "-" + alignedB;
+                i--;
+            }
+            else {
+                alignedA = "-" + alignedA;
+                alignedB = secondSeq.charAt(j) + alignedB;
+                j--;
+            }
+        }
+        String[] aligned = new String[2];
+        aligned[0] = alignedA;
+        aligned[1] = alignedB;
+        return aligned;
+    }
+
+    public int findScore(int asciiFirst, int asciiSecond) {
+        int x = 0;
+        int y = 0;
+        for (int k = 0; k < matrixLocation.length; k++) {
+            if (matrixLocation[k] == asciiFirst) {
+                x = k;
+            }
+            if (matrixLocation[k] == asciiSecond) {
+                y = k;
+            }
+        }
+        return blosum62[x][y];
     }
 
     public int[] lookUp(int x, int y) {
@@ -138,14 +169,11 @@ public class Main {
     public static void main(String[] args) {
         Main aligner = new Main("HNDPHEA","DESA");
         aligner.buildMatrix();
+        String[] answer = aligner.traceback();
 
-        for (int i = 0; i < aligner.matrix.length; i++) {
-            System.out.println();
+        System.out.println(answer[0]);
+        System.out.println(answer[1]);
 
-            for (int j = 0; j < aligner.matrix[i].length; j++) {
-                System.out.print(aligner.matrix[i][j] + " ");
-            }
-        }
 
     }
 }
