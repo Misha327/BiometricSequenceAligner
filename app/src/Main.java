@@ -1,9 +1,12 @@
+import org.biojava.nbio.core.alignment.matrices.SubstitutionMatrixHelper;
+
 public class Main {
     int n, m;
     String firstSeq, secondSeq;
     int[][] matrix;
-    int[][] substitutionMatrix;
-    int gapPenalty = -8;
+    short[][] substitutionMatrix;
+    int gapOpeningPenalty = -8;
+    int gapExtensionPenalty = -1;
     int[] matrixLocation = {65, 82, 78, 68, 67, 81, 69, 71, 72, 73, 76, 75, 77, 70, 80, 83, 84, 87, 89, 86};
     private final int[][] blosum50 = {
             {5, -2, -1, -2, -1, -1, -1, 0, -2, -1, -2, -1, -1, -3, -1, 1, 0, -3, -2, 0},
@@ -62,17 +65,17 @@ public class Main {
     /* logic
      *
      * */
-    public void buildGlobalMatrix(int[][] scoreMatrix) {
+    public String[] globalAlignment(short[][] scoreMatrix) {
         substitutionMatrix = scoreMatrix;
         int[][] matrix = new int[secondSeq.length() + 1][firstSeq.length() + 1];
         matrix[0][0] = 0;
         int x = 0;
         int y = 0;
         for (int i = 1; i <= secondSeq.length(); i++) {
-            matrix[i][0] = i * gapPenalty;
+            matrix[i][0] = i * gapOpeningPenalty;
         }
         for (int i = 1; i <= firstSeq.length(); i++) {
-            matrix[0][i] = i * gapPenalty;
+            matrix[0][i] = i * gapOpeningPenalty;
         }
         for (int i = 1; i <= secondSeq.length(); i++) {
             for (int j = 1; j <= firstSeq.length(); j++) {
@@ -83,8 +86,8 @@ public class Main {
                 int score = findScore(substitutionMatrix, asciiFirst, asciiSecond);
 
                 int sum = score + matrix[i - 1][j - 1];
-                int right = matrix[i - 1][j] + gapPenalty;
-                int down = matrix[i][j - 1] + gapPenalty;
+                int right = matrix[i - 1][j] + gapOpeningPenalty;
+                int down = matrix[i][j - 1] + gapOpeningPenalty;
 
                 //Find the max
                 if (sum > right && sum > down) {
@@ -95,9 +98,10 @@ public class Main {
             }
         }
         this.matrix = matrix;
+        return globalTraceback();
     }
 
-    public void buildSemiGlobalMatrix(int[][] scoreMatrix) {
+    public String[] semiGlobalAlignment(short[][] scoreMatrix) {
         substitutionMatrix = scoreMatrix;
         int[][] matrix = new int[secondSeq.length() + 1][firstSeq.length() + 1];
         matrix[0][0] = 0;
@@ -118,8 +122,8 @@ public class Main {
                 int score = findScore(substitutionMatrix, asciiFirst, asciiSecond);
 
                 int sum = score + matrix[i - 1][j - 1];
-                int right = matrix[i - 1][j] + gapPenalty;
-                int down = matrix[i][j - 1] + gapPenalty;
+                int right = matrix[i - 1][j] + gapOpeningPenalty;
+                int down = matrix[i][j - 1] + gapOpeningPenalty;
 
                 //Find the max
                 if (sum > right && sum > down) {
@@ -130,6 +134,72 @@ public class Main {
             }
         }
         this.matrix = matrix;
+        return semiTraceback();
+    }
+
+    public String[] localAlignment(short[][] scoreMatrix) {
+        substitutionMatrix = scoreMatrix;
+        int[][] matrix = new int[secondSeq.length() + 1][firstSeq.length() + 1];
+        matrix[0][0] = 0;
+        int x = 0;
+        int y = 0;
+        //value, x, y
+        int[] highest = {0, 0, 0};
+        for (int i = 1; i <= secondSeq.length(); i++) {
+            matrix[i][0] = 0;
+        }
+        for (int i = 1; i <= firstSeq.length(); i++) {
+            matrix[0][i] = 0;
+        }
+        for (int i = 1; i <= secondSeq.length(); i++) {
+            for (int j = 1; j <= firstSeq.length(); j++) {
+                int asciiFirst = (int) firstSeq.charAt(j - 1);
+                int asciiSecond = (int) secondSeq.charAt(i - 1);
+
+                //Find the score coordinates
+                int score = findScore(substitutionMatrix, asciiFirst, asciiSecond);
+
+                int sum = score + matrix[i - 1][j - 1];
+                int right = matrix[i - 1][j] + gapOpeningPenalty;
+                int down = matrix[i][j - 1] + gapOpeningPenalty;
+
+                //Find the optimum score
+                if (sum > right && sum > down) {
+                    if (sum < 0) {
+                        sum = 0;
+                    }
+                    if (highest[0] < sum) {
+                        highest[0] = sum;
+                        highest[1] = i;
+                        highest[2] = j;
+                    }
+                    matrix[i][j] = sum;
+                } else if (right > down) {
+                    if (right < 0) {
+                        right = 0;
+                    }
+                    if (highest[0] < right) {
+                        highest[0] = right;
+                        highest[1] = i;
+                        highest[2] = j;
+                    }
+                    matrix[i][j] = right;
+                } else if (down > right) {
+                    if (down < 0) {
+                        down = 0;
+                    }
+                    if (highest[0] < down) {
+                        highest[0] = down;
+                        highest[1] = i;
+                        highest[2] = j;
+                    }
+                    matrix[i][j] = down;
+                }
+            }
+        }
+        this.matrix = matrix;
+
+        return localTraceback(highest);
     }
 
     public String[] globalTraceback() {
@@ -146,15 +216,17 @@ public class Main {
                 score += findScore(substitutionMatrix, (int) firstSeq.charAt(j - 1), (int) secondSeq.charAt(i - 1));
                 i--;
                 j--;
-            } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapPenalty) {
+            } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapOpeningPenalty) {
                 alignedB.append(secondSeq.charAt(i - 1));
                 alignedA.append("-");
-                score += gapPenalty;
+                //Todo: affine gap penalty
+//                if (alignedA.charAt())
+                score += gapOpeningPenalty;
                 i--;
             } else {
                 alignedA.append(firstSeq.charAt(j - 1));
                 alignedB.append("-");
-                score += gapPenalty;
+                score += gapOpeningPenalty;
                 j--;
             }
         }
@@ -202,15 +274,15 @@ public class Main {
                 score += findScore(substitutionMatrix, (int) firstSeq.charAt(j - 1), (int) secondSeq.charAt(i - 1));
                 i--;
                 j--;
-            } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapPenalty) {
+            } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapOpeningPenalty) {
                 alignedB.append(secondSeq.charAt(i - 1));
                 alignedA.append("-");
-                score += gapPenalty;
+                score += gapOpeningPenalty;
                 i--;
-            } else if (j > 0 && matrix[i][j - 1] == matrix[i][j] - gapPenalty) {
+            } else if (j > 0 && matrix[i][j - 1] == matrix[i][j] - gapOpeningPenalty) {
                 alignedA.append(firstSeq.charAt(j - 1));
                 alignedB.append("-");
-                score += gapPenalty;
+                score += gapOpeningPenalty;
                 j--;
             }
         }
@@ -219,71 +291,6 @@ public class Main {
         aligned[1] = alignedB.reverse().toString();
         aligned[2] = Integer.toString(score);
         return aligned;
-    }
-
-    public String[] buildLocalMatrix(int[][] scoreMatrix) {
-        substitutionMatrix = scoreMatrix;
-        int[][] matrix = new int[secondSeq.length() + 1][firstSeq.length() + 1];
-        matrix[0][0] = 0;
-        int x = 0;
-        int y = 0;
-        //value, x, y
-        int[] highest = {0, 0, 0};
-        for (int i = 1; i <= secondSeq.length(); i++) {
-            matrix[i][0] = 0;
-        }
-        for (int i = 1; i <= firstSeq.length(); i++) {
-            matrix[0][i] = 0;
-        }
-        for (int i = 1; i <= secondSeq.length(); i++) {
-            for (int j = 1; j <= firstSeq.length(); j++) {
-                int asciiFirst = (int) firstSeq.charAt(j - 1);
-                int asciiSecond = (int) secondSeq.charAt(i - 1);
-
-                //Find the score coordinates
-                int score = findScore(substitutionMatrix, asciiFirst, asciiSecond);
-
-                int sum = score + matrix[i - 1][j - 1];
-                int right = matrix[i - 1][j] + gapPenalty;
-                int down = matrix[i][j - 1] + gapPenalty;
-
-                //Find the optimum score
-                if (sum > right && sum > down) {
-                    if (sum < 0) {
-                        sum = 0;
-                    }
-                    if (highest[0] < sum) {
-                        highest[0] = sum;
-                        highest[1] = i;
-                        highest[2] = j;
-                    }
-                    matrix[i][j] = sum;
-                } else if (right > down) {
-                    if (right < 0) {
-                        right = 0;
-                    }
-                    if (highest[0] < right) {
-                        highest[0] = right;
-                        highest[1] = i;
-                        highest[2] = j;
-                    }
-                    matrix[i][j] = right;
-                } else if (down > right) {
-                    if (down < 0) {
-                        down = 0;
-                    }
-                    if (highest[0] < down) {
-                        highest[0] = down;
-                        highest[1] = i;
-                        highest[2] = j;
-                    }
-                    matrix[i][j] = down;
-                }
-            }
-        }
-        this.matrix = matrix;
-
-        return localTraceback(highest);
     }
 
     public String[] localTraceback(int[] startPoint) {
@@ -306,15 +313,15 @@ public class Main {
                 score += findScore(substitutionMatrix, (int) firstSeq.charAt(j - 1), (int) secondSeq.charAt(i - 1));
                 i--;
                 j--;
-            } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapPenalty) {
+            } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapOpeningPenalty) {
                 alignedB.append(secondSeq.charAt(i - 1));
                 alignedA.append("-");
-                score += gapPenalty;
+                score += gapOpeningPenalty;
                 i--;
-            } else if (j > 0 && matrix[i][j - 1] == matrix[i][j] - gapPenalty) {
+            } else if (j > 0 && matrix[i][j - 1] == matrix[i][j] - gapOpeningPenalty) {
                 alignedA.append(firstSeq.charAt(j - 1));
                 alignedB.append("-");
-                score += gapPenalty;
+                score += gapOpeningPenalty;
                 j--;
             }
         }
@@ -325,7 +332,7 @@ public class Main {
         return aligned;
     }
 
-    public int findScore(int[][] scoreMatrix, int asciiFirst, int asciiSecond) {
+    public int findScore(short[][] scoreMatrix, int asciiFirst, int asciiSecond) {
         int x = 0;
         int y = 0;
         for (int k = 0; k < matrixLocation.length; k++) {
@@ -341,7 +348,9 @@ public class Main {
 
     public static void main(String[] args) {
         Main aligner = new Main("HEAGAWGHEE", "PAWHEAE");
-        String[] answer = aligner.buildLocalMatrix(aligner.blosum50);
+        SubstitutionMatrixHelper.getBlosum50().getMatrix();
+
+        String[] results = aligner.globalAlignment(SubstitutionMatrixHelper.getBlosum50().getMatrix());
 
 
         for (int i = 0; i < aligner.matrix.length; i++) {
@@ -351,9 +360,9 @@ public class Main {
             System.out.println();
         }
 //
-        System.out.println(answer[0]);
-        System.out.println(answer[1]);
-        System.out.println("Score: " + answer[2]);
+        System.out.println(results[0]);
+        System.out.println(results[1]);
+        System.out.println("Score: " + results[2]);
 
 
     }
