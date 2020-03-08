@@ -4,8 +4,10 @@ public class Main {
     int n, m;
     String firstSeq, secondSeq;
     int[][] matrix;
+    int[][] Ix;
+    int[][] Iy;
     short[][] substitutionMatrix;
-    int gapOpeningPenalty = -8;
+    int gapOpeningPenalty = -4;
     int gapExtensionPenalty = -1;
     int[] matrixLocation = {65, 82, 78, 68, 67, 81, 69, 71, 72, 73, 76, 75, 77, 70, 80, 83, 84, 87, 89, 86};
     private final int[][] blosum50 = {
@@ -62,9 +64,6 @@ public class Main {
         secondSeq = second;
     }
 
-    /* logic
-     *
-     * */
     public String[] globalAlignment(short[][] scoreMatrix) {
         substitutionMatrix = scoreMatrix;
         int[][] matrix = new int[secondSeq.length() + 1][firstSeq.length() + 1];
@@ -217,16 +216,17 @@ public class Main {
                 i--;
                 j--;
             } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapOpeningPenalty) {
+                score += affineGap(alignedA.toString());
                 alignedB.append(secondSeq.charAt(i - 1));
                 alignedA.append("-");
                 //Todo: affine gap penalty
-//                if (alignedA.charAt())
-                score += gapOpeningPenalty;
+
                 i--;
             } else {
+                score += affineGap(alignedB.toString());
+
                 alignedA.append(firstSeq.charAt(j - 1));
                 alignedB.append("-");
-                score += gapOpeningPenalty;
                 j--;
             }
         }
@@ -346,16 +346,159 @@ public class Main {
         return scoreMatrix[x][y];
     }
 
-    public static void main(String[] args) {
-        Main aligner = new Main("HEAGAWGHEE", "PAWHEAE");
-        SubstitutionMatrixHelper.getBlosum50().getMatrix();
+    public int affineGap(String seq) {
+        int i = seq.length() - 1;
+        int score = 0;
+        int gapLength = 0;
+        if (seq.charAt(i) == '-') {
+            while (seq.charAt(i) == '-') {
+                gapLength++;
+                i--;
+            }
+            score = gapLength * gapExtensionPenalty;
+        }
+        else {
+            score = gapOpeningPenalty;
+        }
 
-        String[] results = aligner.globalAlignment(SubstitutionMatrixHelper.getBlosum50().getMatrix());
+        return score;
+    }
+
+    public String[] globalAffineAlignment(short[][] scoreMatrix) {
+        substitutionMatrix = scoreMatrix;
+        int[][] matrix = new int[secondSeq.length() + 1][firstSeq.length() + 1];
+        int[][] Ix = new int[secondSeq.length() + 1][firstSeq.length() + 1];
+        int[][] Iy = new int[secondSeq.length() + 1][firstSeq.length() + 1];
+
+        matrix[0][0] = 0;
+        Ix[0][0] = 0;
+        Iy[0][0] = 0;
+
+        int x = 0;
+        int y = 0;
+        int infinity = -2147483644;
+        for (int i = 1; i <= secondSeq.length(); i++) {
+            Iy[i][0] = gapOpeningPenalty + (i-1)*gapExtensionPenalty;
+            matrix[i][0] = infinity;
+            Ix[i][0] =  infinity;
+
+        }
+        for (int i = 1; i <= firstSeq.length(); i++) {
+            Ix[0][i] = gapOpeningPenalty + (i-1)*gapExtensionPenalty;
+            Iy[0][i] =  infinity;
+            matrix[0][i] = infinity;
+        }
+
+        for (int i = 1; i <= secondSeq.length(); i++) {
+            for (int j = 1; j <= firstSeq.length(); j++) {
+                int asciiFirst = (int) firstSeq.charAt(j - 1);
+                int asciiSecond = (int) secondSeq.charAt(i - 1);
+
+                //Find the score coordinates
+                int score = findScore(substitutionMatrix, asciiFirst, asciiSecond);
+
+                //Logic for diagonal value
+                int M = score + matrix[i - 1][j - 1];
+                int IX = Ix[i-1][j-1] + score;
+                int IY = Iy[i-1][j-1] + score;
+                //Find the max
+                if (M > IX && M > IY) {
+                    matrix[i][j] = M;
+                } else if (IX > IY) {
+                    matrix[i][j] = IX;
+                } else matrix[i][j] = IY;
+
+                //Logic for horizontal value
+                int Mx = gapOpeningPenalty + matrix[i][j-1];
+                int IXx = Ix[i][j-1] + gapExtensionPenalty;
+                //Find the max
+                if (Mx > IXx) {
+                    Ix[i][j] = Mx;
+                } else Ix[i][j] = IXx;
+
+                //Logic for vertical value
+                int My = gapOpeningPenalty + matrix[i][j-1];
+                int IYy = Ix[i][j-1] + gapExtensionPenalty;
+                //Find the max
+                if (My > IYy) {
+                    Iy[i][j] = My;
+                } else Iy[i][j] = IYy;
+
+            }
+        }
+        this.Ix = Ix;
+        this.Iy = Iy;
+        this.matrix = matrix;
+        return globalTraceback();
+    }
+
+    public String[] globalAffineTraceback() {
+        StringBuilder alignedFirst = new StringBuilder();
+        StringBuilder alignedB = new StringBuilder();
+        int i = secondSeq.length();
+        int j = firstSeq.length();
+        int score = 0;
+
+        while (i > 0 || j > 0) {
+            //if the M is the highest value
+            if (matrix[i][j]> Ix[i][j] && matrix[i][j] > Iy[i][j]) {
+                i--;
+                j--;
+            } else if (Ix[i][j] > Iy[i][j]) {
+                j--;
+            } else{
+                i--;
+            }
+            //Write an exception if substitution matrix is not set
+            if (i > 0 && j > 0 && matrix[i][j] == (matrix[i - 1][j - 1] + findScore(substitutionMatrix, (int) firstSeq.charAt(j - 1), (int) secondSeq.charAt(i - 1)))
+
+            ) {
+                alignedFirst.append(firstSeq.charAt(j - 1));
+                alignedB.append(secondSeq.charAt(i - 1));
+                score += findScore(substitutionMatrix, (int) firstSeq.charAt(j - 1), (int) secondSeq.charAt(i - 1));
+                i--;
+                j--;
+            } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapOpeningPenalty) {
+                score += affineGap(alignedFirst.toString());
+                alignedB.append(secondSeq.charAt(i - 1));
+                alignedFirst.append("-");
+                //Todo: affine gap penalty
+
+                i--;
+            } else {
+                score += affineGap(alignedB.toString());
+
+                alignedFirst.append(firstSeq.charAt(j - 1));
+                alignedB.append("-");
+                j--;
+            }
+        }
+        String[] aligned = new String[3];
+        aligned[0] = alignedFirst.reverse().toString();
+        aligned[1] = alignedB.reverse().toString();
+        aligned[2] = Integer.toString(score);
+        return aligned;
+    }
+
+    public static void main(String[] args) {
+        Main aligner = new Main("ACACT", "AAT");
+        short[][] identity = new short[20][20];
+
+        for (int i = 0; i < 20; i++) {
+            for (int j = 0; j < 20; j++) {
+                if (i == j) {
+                    identity[i][j] = 1;
+                }
+                else identity[i][j] = 0;
+            }
+        }
+        String[] results = aligner.globalAffineAlignment(identity);
 
 
         for (int i = 0; i < aligner.matrix.length; i++) {
             for (int j = 0; j < aligner.matrix[i].length; j++) {
-                System.out.print(aligner.matrix[i][j] + " ");
+
+                    System.out.print(aligner.Ix[i][j] + " ");
             }
             System.out.println();
         }
