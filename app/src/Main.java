@@ -435,18 +435,33 @@ public class Main {
     public String[] globalAffineTraceback() {
         StringBuilder alignedFirst = new StringBuilder();
         StringBuilder alignedB = new StringBuilder();
+        StringBuilder alignedC = new StringBuilder();
+        StringBuilder alignedD = new StringBuilder();
+
         int i = secondSeq.length();
         int j = firstSeq.length();
         int score = 0;
 
         while (i > 0 || j > 0) {
             //if the M is the highest value
-            if (matrix[i][j]> Ix[i][j] && matrix[i][j] > Iy[i][j]) {
+            if (matrix[i][j] > Ix[i][j] && matrix[i][j] > Iy[i][j]) {
+                score += findScore(substitutionMatrix, (int) firstSeq.charAt(j - 1), (int) secondSeq.charAt(i - 1));
+
+                if (matrix[i-1][j-1] == Ix[i-1][j-1] && matrix[i-1][j-1] == Iy[i-1][j-1]) {
+                    alignedFirst.append(firstSeq.charAt(j - 1));
+                    alignedB.append(secondSeq.charAt(i - 1));
+                    alignedC.append(secondSeq.charAt(i - 1));
+                    alignedD.append(secondSeq.charAt(i - 1));
+
+                }
+                else if (matrix[i-1][j-1] == Iy[i-1][j-1]) {
+
+                }
                 i--;
                 j--;
             } else if (Ix[i][j] > Iy[i][j]) {
                 j--;
-            } else{
+            } else {
                 i--;
             }
             //Write an exception if substitution matrix is not set
