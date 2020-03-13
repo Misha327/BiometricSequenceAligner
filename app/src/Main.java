@@ -1,4 +1,6 @@
-import org.biojava.nbio.core.alignment.matrices.SubstitutionMatrixHelper;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Main {
     int n, m;
@@ -9,50 +11,9 @@ public class Main {
     short[][] substitutionMatrix;
     int gapOpeningPenalty = -4;
     int gapExtensionPenalty = -1;
+    List<List<Integer>> paths = new ArrayList<>();
+
     int[] matrixLocation = {65, 82, 78, 68, 67, 81, 69, 71, 72, 73, 76, 75, 77, 70, 80, 83, 84, 87, 89, 86};
-    private final int[][] blosum50 = {
-            {5, -2, -1, -2, -1, -1, -1, 0, -2, -1, -2, -1, -1, -3, -1, 1, 0, -3, -2, 0},
-            {-2, 7, -1, -2, -4, 1, 0, -3, 0, -4, -3, 3, -2, -3, -3, -1, -1, -3, -1, -3},
-            {-1, -1, 7, 2, -2, 0, 0, 0, 1, -3, -4, 0, -2, -4, -2, 1, 0, -4, -2, -3},
-            {-2, -2, 2, 8, -4, 0, 2, -1, -1, -4, -4, -1, -4, -5, -1, 0, -1, -5, -3, -4},
-            {-1, -4, -2, -4, 13, -3, -3, -3, -3, -2, -2, -3, -2, -2, -4, -1, -1, -5, -3, -1},
-            {-1, 1, 0, 0, -3, 7, 2, -2, 1, -3, -2, 2, 0, -4, -1, 0, -1, -1, -1, -3},
-            {-1, 0, 0, 2, -3, 2, 6, -3, 0, -4, -3, 1, -2, -3, -1, -1, -1, -3, -2, -3},
-            {0, -3, 0, -1, -3, -2, -3, 8, -2, -4, -4, -2, -3, -4, -2, 0, -2, -3, -3, -4},
-            {-2, 0, 1, -1, -3, 1, 0, -2, 10, -4, -3, 0, -1, -1, -2, -1, -2, -3, 2, -4},
-            {-1, -4, -3, -4, -2, -3, -4, -4, -4, 5, 2, -3, 2, 0, -3, -3, -1, -3, -1, 4},
-            {-2, -3, -4, -4, -2, -2, -3, -4, -3, 2, 5, -3, 3, 1, -4, -3, -1, -2, -1, 1},
-            {-1, 3, 0, -1, -3, 2, 1, -2, 0, -3, -3, 6, -2, -4, -1, 0, -1, -3, -2, -3},
-            {-1, -2, -2, -4, -2, 0, -2, -3, -1, 2, 3, -2, 7, 0, -3, -2, -1, -1, 0, 1},
-            {-3, -3, -4, -5, -2, -4, -3, -4, -1, 0, 1, -4, 0, 8, -4, -3, -2, 1, 4, -1},
-            {-1, -3, -2, -1, -4, -1, -1, -2, -2, -3, -4, -1, -3, -4, 10, -1, -1, -4, -3, -3},
-            {1, -1, 1, 0, -1, 0, -1, 0, -1, -3, -3, 0, -2, -3, -1, 5, 2, -4, -2, -2},
-            {0, -1, 0, -1, -1, -1, -1, -2, -2, -1, -1, -1, -1, -2, -1, 2, 5, -3, -2, 0},
-            {-3, -3, -4, -5, -5, -1, -3, -3, -3, -3, -2, -3, -1, 1, -4, -4, -3, 15, 2, -3},
-            {-2, -1, -2, -3, -3, -1, -2, -3, 2, -1, -1, -2, 0, 4, -3, -2, -2, 2, 8, -1},
-            {0, -3, -3, -4, -1, -3, -3, -4, -4, 4, 1, -3, 1, -1, -3, -2, 0, -3, -1, 5}};
-
-    private final int[][] blosum62 = {{4, -1, -2, -2, 0, -1, -1, 0, -2, -1, -1, -1, -1, -2, -1, 1, 0, -3, -2, 0},
-            {-1, 5, 0, -2, -3, 1, 0, -2, 0, -3, -2, 2, -1, -3, -2, -1, -1, -3, -2, -3},
-            {-2, 0, 6, 1, -3, 0, 0, 0, 1, -3, -3, 0, -2, -3, -2, 1, 0, -4, -2, -3},
-            {-2, -2, 1, 6, -3, 0, 2, -1, -1, -3, -4, -1, -3, -3, -1, 0, -1, -4, -3, -3},
-            {0, -3, -3, -3, 9, -3, -4, -3, -3, -1, -1, -3, -1, -2, -3, -1, -1, -2, -2, -1},
-            {-1, 1, 0, 0, -3, 5, 2, -2, 0, -3, -2, 1, 0, -3, -1, 0, -1, -2, -1, -2},
-            {-1, 0, 0, 2, -4, 2, 5, -2, 0, -3, -3, 1, -2, -3, -1, 0, -1, -3, -2, -2},
-            {0, -2, 0, -1, -3, -2, -2, 6, -2, -4, -4, -2, -3, -3, -2, 0, -2, -2, -3, -3},
-            {-2, 0, 1, -1, -3, 0, 0, -2, 8, -3, -3, -1, -2, -1, -2, -1, -2, -2, 2, -3},
-            {-1, -3, -3, -3, -1, -3, -3, -4, -3, 4, 2, -3, 1, 0, -3, -2, -1, -3, -1, 3},
-            {-1, -2, -3, -4, -1, -2, -3, -4, -3, 2, 4, -2, 2, 0, -3, -2, -1, -2, -1, 1},
-            {-1, 2, 0, -1, -3, 1, 1, -2, -1, -3, -2, 5, -1, -3, -1, 0, -1, -3, -2, -2},
-            {-1, -1, -2, -3, -1, 0, -2, -3, -2, 1, 2, -1, 5, 0, -2, -1, -1, -1, -1, 1},
-            {-2, -3, -3, -3, -2, -3, -3, -3, -1, 0, 0, -3, 0, 6, -4, -2, -2, 1, 3, -1},
-            {-1, -2, -2, -1, -3, -1, -1, -2, -2, -3, -3, -1, -2, -4, 7, -1, -1, -4, -3, -2},
-            {1, -1, 1, 0, -1, 0, 0, 0, -1, -2, -2, 0, -1, -2, -1, 4, 1, -3, -2, -2},
-            {0, -1, 0, -1, -1, -1, -1, -2, -2, -1, -1, -1, -1, -2, -1, 1, 5, -2, -2, 0},
-            {-3, -3, -4, -4, -2, -2, -3, -2, -2, -3, -2, -3, -1, 1, -4, -3, -2, 11, 2, -3},
-            {-2, -2, -2, -3, -2, -1, -2, -3, 2, -1, -1, -2, -1, 3, -3, -2, -2, 2, 7, -1},
-            {0, -3, -3, -3, -1, -2, -2, -3, -3, 3, 1, -2, 1, -1, -2, -2, 0, -3, -1, 4}};
-
 
     Main() {
         n = 0;
@@ -216,14 +177,14 @@ public class Main {
                 i--;
                 j--;
             } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapOpeningPenalty) {
-                score += affineGap(alignedA.toString());
+                score += gapOpeningPenalty;
                 alignedB.append(secondSeq.charAt(i - 1));
                 alignedA.append("-");
                 //Todo: affine gap penalty
 
                 i--;
             } else {
-                score += affineGap(alignedB.toString());
+                score += gapOpeningPenalty;
 
                 alignedA.append(firstSeq.charAt(j - 1));
                 alignedB.append("-");
@@ -346,25 +307,7 @@ public class Main {
         return scoreMatrix[x][y];
     }
 
-    public int affineGap(String seq) {
-        int i = seq.length() - 1;
-        int score = 0;
-        int gapLength = 0;
-        if (seq.charAt(i) == '-') {
-            while (seq.charAt(i) == '-') {
-                gapLength++;
-                i--;
-            }
-            score = gapLength * gapExtensionPenalty;
-        }
-        else {
-            score = gapOpeningPenalty;
-        }
-
-        return score;
-    }
-
-    public String[] globalAffineAlignment(short[][] scoreMatrix) {
+    public StringBuilder[][] globalAffineAlignment(short[][] scoreMatrix) {
         substitutionMatrix = scoreMatrix;
         int[][] matrix = new int[secondSeq.length() + 1][firstSeq.length() + 1];
         int[][] Ix = new int[secondSeq.length() + 1][firstSeq.length() + 1];
@@ -376,16 +319,16 @@ public class Main {
 
         int x = 0;
         int y = 0;
-        int infinity = -2147483644;
+        int infinity = -2147483600;
         for (int i = 1; i <= secondSeq.length(); i++) {
-            Iy[i][0] = gapOpeningPenalty + (i-1)*gapExtensionPenalty;
+            Iy[i][0] = gapOpeningPenalty + (i - 1) * gapExtensionPenalty;
             matrix[i][0] = infinity;
-            Ix[i][0] =  infinity;
+            Ix[i][0] = infinity;
 
         }
         for (int i = 1; i <= firstSeq.length(); i++) {
-            Ix[0][i] = gapOpeningPenalty + (i-1)*gapExtensionPenalty;
-            Iy[0][i] =  infinity;
+            Ix[0][i] = gapOpeningPenalty + (i - 1) * gapExtensionPenalty;
+            Iy[0][i] = infinity;
             matrix[0][i] = infinity;
         }
 
@@ -399,8 +342,8 @@ public class Main {
 
                 //Logic for diagonal value
                 int M = score + matrix[i - 1][j - 1];
-                int IX = Ix[i-1][j-1] + score;
-                int IY = Iy[i-1][j-1] + score;
+                int IX = Ix[i - 1][j - 1] + score;
+                int IY = Iy[i - 1][j - 1] + score;
                 //Find the max
                 if (M > IX && M > IY) {
                     matrix[i][j] = M;
@@ -409,16 +352,16 @@ public class Main {
                 } else matrix[i][j] = IY;
 
                 //Logic for horizontal value
-                int Mx = gapOpeningPenalty + matrix[i][j-1];
-                int IXx = Ix[i][j-1] + gapExtensionPenalty;
+                int Mx = gapOpeningPenalty + matrix[i][j - 1];
+                int IXx = Ix[i][j - 1] + gapExtensionPenalty;
                 //Find the max
                 if (Mx > IXx) {
                     Ix[i][j] = Mx;
                 } else Ix[i][j] = IXx;
 
                 //Logic for vertical value
-                int My = gapOpeningPenalty + matrix[i][j-1];
-                int IYy = Ix[i][j-1] + gapExtensionPenalty;
+                int My = gapOpeningPenalty + matrix[i - 1][j];
+                int IYy = Iy[i - 1][j] + gapExtensionPenalty;
                 //Find the max
                 if (My > IYy) {
                     Iy[i][j] = My;
@@ -429,70 +372,166 @@ public class Main {
         this.Ix = Ix;
         this.Iy = Iy;
         this.matrix = matrix;
-        return globalTraceback();
+        paths.add(new ArrayList<>());
+        traceback(paths.get(0), secondSeq.length(), firstSeq.length());
+        return transcribe();
     }
 
-    public String[] globalAffineTraceback() {
-        StringBuilder alignedFirst = new StringBuilder();
-        StringBuilder alignedB = new StringBuilder();
-        StringBuilder alignedC = new StringBuilder();
-        StringBuilder alignedD = new StringBuilder();
+    public void traceback(List<Integer> path, int i, int j) {
+        if (i > 0 || j > 0) {
+            //All values are equal
+            if (matrix[i][j] == Ix[i][j] && matrix[i][j] == Iy[i][j]) {
+                if (paths.size() == 1) {
+                    paths.add(new ArrayList<>());
+                    paths.add(new ArrayList<>());
+                    paths.get(0).add(1);
+                    paths.get(1).add(2);
+                    paths.get(2).add(3);
 
-        int i = secondSeq.length();
-        int j = firstSeq.length();
-        int score = 0;
+                    traceback(paths.get(0), i, j - 1);
+                    traceback(paths.get(1), i - 1, j - 1);
+                    traceback(paths.get(2), i - 1, j);
+                } else {
+                    int size = paths.size();
+                    int direction = 2;
+                    //make 2 copies of path and add different directions
+                    for (int k = size; k < size + 2; k++) {
+                        paths.add(new ArrayList<>(path));
+                        paths.get(paths.size() - 1).add(direction);
+                        direction++;
+                    }
+                    //Add a direction to the existing path
+                    path.add(1);
 
-        while (i > 0 || j > 0) {
-            //if the M is the highest value
-            if (matrix[i][j] > Ix[i][j] && matrix[i][j] > Iy[i][j]) {
-                score += findScore(substitutionMatrix, (int) firstSeq.charAt(j - 1), (int) secondSeq.charAt(i - 1));
-
-                if (matrix[i-1][j-1] == Ix[i-1][j-1] && matrix[i-1][j-1] == Iy[i-1][j-1]) {
-                    alignedFirst.append(firstSeq.charAt(j - 1));
-                    alignedB.append(secondSeq.charAt(i - 1));
-                    alignedC.append(secondSeq.charAt(i - 1));
-                    alignedD.append(secondSeq.charAt(i - 1));
-
+                    traceback(path, i, j - 1);
+                    traceback(paths.get(paths.size() - 3), i - 1, j);
+                    traceback(paths.get(paths.size() - 2), i - 1, j - 1);
                 }
-                else if (matrix[i-1][j-1] == Iy[i-1][j-1]) {
-
-                }
-                i--;
-                j--;
-            } else if (Ix[i][j] > Iy[i][j]) {
-                j--;
-            } else {
-                i--;
             }
-            //Write an exception if substitution matrix is not set
-            if (i > 0 && j > 0 && matrix[i][j] == (matrix[i - 1][j - 1] + findScore(substitutionMatrix, (int) firstSeq.charAt(j - 1), (int) secondSeq.charAt(i - 1)))
+            //M and Ix are biggest and equal
+            else if (matrix[i][j] == Ix[i][j] && matrix[i][j] > Iy[i][j]) {
+                if (paths.size() == 1) {
+                    paths.add(new ArrayList<>(path));
+                    paths.get(0).add(1);
+                    paths.get(1).add(2);
 
-            ) {
-                alignedFirst.append(firstSeq.charAt(j - 1));
-                alignedB.append(secondSeq.charAt(i - 1));
-                score += findScore(substitutionMatrix, (int) firstSeq.charAt(j - 1), (int) secondSeq.charAt(i - 1));
-                i--;
-                j--;
-            } else if (i > 0 && matrix[i - 1][j] == matrix[i][j] - gapOpeningPenalty) {
-                score += affineGap(alignedFirst.toString());
-                alignedB.append(secondSeq.charAt(i - 1));
-                alignedFirst.append("-");
-                //Todo: affine gap penalty
+                    traceback(paths.get(0), i, j - 1);
+                    traceback(paths.get(1), i - 1, j - 1);
+                } else {
+                    paths.add(new ArrayList<>(path));
+                    paths.get(paths.size() - 1).add(2);
+                    path.add(1);
 
-                i--;
-            } else {
-                score += affineGap(alignedB.toString());
+                    traceback(path, i, j - 1);
+                    traceback(paths.get(paths.size() - 1), i - 1, j - 1);
+                }
+            }
+            //Ix and Iy are biggest and equal
+            else if (Ix[i][j] == Iy[i][j] && matrix[i][j] < Ix[i][j]) {
+                if (paths.size() == 1) {
+                    paths.add(new ArrayList<>());
+                    paths.get(0).add(1);
+                    paths.get(1).add(3);
 
-                alignedFirst.append(firstSeq.charAt(j - 1));
-                alignedB.append("-");
-                j--;
+                    traceback(paths.get(0), i, j - 1);
+                    traceback(paths.get(1), i - 1, j);
+                } else {
+                    paths.add(new ArrayList<>(path));
+                    paths.get(paths.size() - 1).add(3);
+                    path.add(1);
+
+                    traceback(path, i, j - 1);
+                    traceback(paths.get(paths.size() - 1), i - 1, j);
+                }
+            }
+            //M and Iy are biggest and equal
+            else if (matrix[i][j] == Iy[i][j] && matrix[i][j] > Ix[i][j]) {
+                if (paths.size() == 1) {
+                    paths.add(new ArrayList<>());
+                    paths.get(0).add(2);
+                    paths.get(1).add(3);
+
+                    traceback(paths.get(0), i - 1, j - 1);
+                    traceback(paths.get(1), i - 1, j);
+                } else {
+                    paths.add(new ArrayList<>(path));
+                    paths.get(paths.size() - 1).add(3);
+                    path.add(2);
+
+                    traceback(path, i - 1, j - 1);
+                    traceback(paths.get(paths.size() - 1), i - 1, j);
+                }
+            }
+            //Ix is the biggest value
+            else if (Ix[i][j] > Iy[i][j] && Ix[i][j] > matrix[i][j]) {
+                if (paths.size() == 1) {
+                    paths.get(0).add(1);
+                    traceback(paths.get(0), i, j - 1);
+                } else {
+                    path.add(1);
+                    traceback(path, i, j - 1);
+                }
+            }
+            //M is the biggest value
+            else if (matrix[i][j] > Ix[i][j] && matrix[i][j] > Iy[i][j]) {
+                //if first cell
+                if (paths.size() == 1) {
+                    paths.get(0).add(2);
+                    traceback(paths.get(0), i - 1, j - 1);
+                } else {
+                    path.add(2);
+                    traceback(path, i - 1, j - 1);
+                }
+            }
+            //Iy is the biggest value
+            else if (Iy[i][j] > Ix[i][j] && Iy[i][j] > matrix[i][j]) {
+                if (paths.size() == 1) {
+                    paths.get(0).add(3);
+                    traceback(paths.get(0), i - 1, j);
+                } else {
+                    path.add(3);
+                    traceback(path, i - 1, j);
+                }
             }
         }
-        String[] aligned = new String[3];
-        aligned[0] = alignedFirst.reverse().toString();
-        aligned[1] = alignedB.reverse().toString();
-        aligned[2] = Integer.toString(score);
-        return aligned;
+    }
+
+    public StringBuilder[][] transcribe() {
+        StringBuilder[][] result = new StringBuilder[paths.size()][3];
+        int score = 0;
+        for (int i = 0; i < paths.size(); i++) {
+            int secondSeqLength = secondSeq.length() - 1;
+            int firstSequenceLength = firstSeq.length() - 1;
+            result[i][0] = new StringBuilder();
+            result[i][1] = new StringBuilder();
+            result[i][2] = new StringBuilder();
+
+            for (int j = 0; j < paths.get(i).size(); j++) {
+                if (paths.get(i).get(j) == 1) {
+                    result[i][0].append(firstSeq.charAt(firstSequenceLength));
+                    result[i][1].append("-");
+                    firstSequenceLength--;
+                } else if (paths.get(i).get(j) == 2) {
+                    result[i][0].append(firstSeq.charAt(firstSequenceLength));
+                    result[i][1].append(secondSeq.charAt(secondSeqLength));
+                    secondSeqLength--;
+                    firstSequenceLength--;
+
+                } else {
+                    result[i][0].append("-");
+                    result[i][1].append(secondSeq.charAt(secondSeqLength));
+                    secondSeqLength--;
+                }
+            }
+            result[i][0].reverse();
+            result[i][1].reverse();
+            //The max score in the end cell
+            score = Math.max(matrix[secondSeq.length()][firstSeq.length()], Ix[secondSeq.length()][firstSeq.length()]);
+            score = Math.max(score, Iy[secondSeq.length()][firstSeq.length()]);
+            result[i][2].append(score);
+
+        }
+        return result;
     }
 
     public static void main(String[] args) {
@@ -503,25 +542,32 @@ public class Main {
             for (int j = 0; j < 20; j++) {
                 if (i == j) {
                     identity[i][j] = 1;
-                }
-                else identity[i][j] = 0;
+                } else identity[i][j] = 0;
             }
         }
-        String[] results = aligner.globalAffineAlignment(identity);
 
 
-        for (int i = 0; i < aligner.matrix.length; i++) {
-            for (int j = 0; j < aligner.matrix[i].length; j++) {
+//        for (int i = 0; i < aligner.matrix.length; i++) {
+//            for (int j = 0; j < aligner.matrix[i].length; j++) {
+//                System.out.print(aligner.matrix[i][j] + " ");
+//            }
+//            System.out.println();
+//        }
 
-                    System.out.print(aligner.Ix[i][j] + " ");
-            }
-            System.out.println();
+
+        StringBuilder[][] results = aligner.globalAffineAlignment(identity);
+
+
+        for (int i = 0; i < aligner.paths.size(); i++) {
+            System.out.println(aligner.paths.get(i));
         }
+//        System.out.println(aligner.matrix);
 //
-        System.out.println(results[0]);
-        System.out.println(results[1]);
-        System.out.println("Score: " + results[2]);
-
+//
+////
+        for (StringBuilder[] x : results) {
+            System.out.println(Arrays.toString(x));
+        }
 
     }
 }
