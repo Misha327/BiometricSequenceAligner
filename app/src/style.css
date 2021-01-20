@@ -1,0 +1,39 @@
+.a:hover {
+    -fx-border-color: #abeb34;
+    -fx-border-width: 0px 0px 3px 0px;
+}
+
+.a {
+    -fx-border-color:  #edebeb;
+
+}
+
+.learnTab {
+    -fx-border-color:  #abeb34;
+
+}
+
+.learnTab:hover {
+    -fx-border-color: #abeb34;
+    -fx-border-width: 0px 0px 3px 0px;
+}
+
+
+.alignerTab:hover {
+    -fx-border-color: #abeb34;
+    -fx-border-width: 0px 0px 3px 0px;
+}
+
+.alignerTab {
+    -fx-border-color:  #abeb34;
+}
+
+.homeTab {
+    -fx-border-color:  #abeb34;
+
+}
+
+.homeTab:hover {
+    -fx-border-color: #abeb34;
+    -fx-border-width: 0px 0px 3px 0px;
+}

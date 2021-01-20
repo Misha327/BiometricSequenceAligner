@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXComboBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<StackPane fx:id="parentContainer" prefHeight="640.0" prefWidth="559.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.AlignerController">
+   <children>
+      <AnchorPane fx:id="anchorRoot" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="640.0" prefWidth="558.0">
+         <children>
+            <VBox fx:id="vbox" layoutX="35.0" layoutY="120.0" prefHeight="318.0" prefWidth="201.0" spacing="10.0">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="First sequence" />
+                  <TextField fx:id="first" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Second sequence" />
+                  <TextField fx:id="second" prefHeight="26.0" prefWidth="226.0" />
+                  <Text fx:id="gapPenLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Gap opening penalty" />
+                  <TextField fx:id="gapPenaltyField" promptText="Gap Penality" text="-8" />
+                  <Text fx:id="gapExtLabel" strokeType="OUTSIDE" strokeWidth="0.0" text="Gap extension penalty" />
+                  <TextField fx:id="gapExtField" text="-1" />
+                   <JFXComboBox fx:id="choiceBox" onAction="#changeCombo" prefHeight="25.0" prefWidth="203.0" promptText="Alignemnt type">
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                  </JFXComboBox>
+                  <JFXComboBox fx:id="matrixPicker" prefHeight="25.0" prefWidth="204.0" promptText="Substitution matrix">
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin>
+                  </JFXComboBox>
+               </children>
+            </VBox>
+            <Text layoutX="30.0" layoutY="102.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Enter the sequences to align">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Text>
+            <VBox layoutX="293.0" layoutY="120.0" prefHeight="164.0" prefWidth="233.0">
+               <children>
+                  <VBox fx:id="resultLabelBox" prefHeight="30.0" prefWidth="270.0" />
+                  <HBox fx:id="resultBox" prefHeight="135.0" prefWidth="270.0" spacing="20.0" />
+               </children>
+            </VBox>
+            <HBox prefHeight="53.0" prefWidth="558.0" style="-fx-background-color: #ffffff;">
+               <children>
+                  <JFXButton fx:id="homeTab" onAction="#menuChanged" prefHeight="73.0" prefWidth="113.0" styleClass="a" stylesheets="@../style.css" text="Home" />
+                  <JFXButton fx:id="alignerTab" prefHeight="73.0" prefWidth="113.0" styleClass="alignerTab" stylesheets="@../style.css" text="Aligner" />
+                  <JFXButton fx:id="learnTab" onAction="#menuChanged" prefHeight="73.0" prefWidth="113.0" styleClass="a" stylesheets="@../style.css" text="Learn" />
+                  <JFXButton fx:id="aboutTab" onAction="#menuChanged" prefHeight="73.0" prefWidth="113.0" styleClass="a" stylesheets="@../style.css" text="About" />
+                  <JFXButton fx:id="exitTab" onAction="#closeApp" prefHeight="73.0" prefWidth="113.0" styleClass="a" stylesheets="@../style.css" text="Exit" />
+               </children>
+            </HBox>
+            <VBox layoutX="358.0" layoutY="349.0" prefHeight="145.0" prefWidth="168.0">
+               <children>
+                  <Text fx:id="matrixArea" strokeType="OUTSIDE" strokeWidth="0.0">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                  </Text>
+                  <JFXButton fx:id="viewMatrixButton" onAction="#viewMatrix" prefHeight="42.0" prefWidth="118.0" style="-fx-background-color: #8bc71c;" text="View Matrix" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </JFXButton>
+               </children>
+            </VBox>
+            <Separator layoutX="276.0" layoutY="282.0" prefHeight="6.0" prefWidth="280.0" />
+            <Separator layoutX="-3.0" layoutY="481.0" prefHeight="25.0" prefWidth="558.0" />
+            <BorderPane layoutX="92.0" layoutY="517.0" prefHeight="102.0" prefWidth="372.0">
+               <center>
+                  <JFXButton onAction="#align" prefHeight="60.0" prefWidth="120.0" style="-fx-background-color: #8bc71c;" text="Align" textFill="WHITE" BorderPane.alignment="CENTER">
+                     <BorderPane.margin>
+                        <Insets top="10.0" />
+                     </BorderPane.margin>
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </JFXButton>
+               </center>
+               <top>
+                  <Text fx:id="errorText" fill="#eb5454" strokeType="OUTSIDE" strokeWidth="0.0" BorderPane.alignment="CENTER">
+                     <font>
+                        <Font name="System Bold" size="18.0" />
+                     </font>
+                  </Text>
+               </top>
+            </BorderPane>
+            <Separator layoutX="275.0" layoutY="53.0" orientation="VERTICAL" prefHeight="440.0" prefWidth="4.0" />
+         </children>
+      </AnchorPane>
+   </children>
+</StackPane>

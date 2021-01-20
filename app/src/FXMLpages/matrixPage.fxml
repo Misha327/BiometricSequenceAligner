@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane fx:id="anchorRoot" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="640.0" prefWidth="559.0" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.MatrixPageController">
+   <children>
+      <HBox layoutX="1.0" prefHeight="53.0" prefWidth="558.0" style="-fx-background-color: #ffffff;">
+         <children>
+            <JFXButton fx:id="homeTab" onAction="#menuChanged" prefHeight="73.0" prefWidth="113.0" styleClass="a" stylesheets="@../style.css" text="Home" />
+            <JFXButton fx:id="alignerTab" onAction="#menuChanged" prefHeight="73.0" prefWidth="113.0" styleClass="a" stylesheets="@../style.css" text="Aligner" />
+            <JFXButton fx:id="learnTab" onAction="#menuChanged" prefHeight="73.0" prefWidth="113.0" styleClass="a" stylesheets="@../style.css" text="Learn" />
+            <JFXButton fx:id="aboutTab" onAction="#menuChanged" prefHeight="73.0" prefWidth="113.0" styleClass="a" stylesheets="@../style.css" text="About" />
+            <JFXButton fx:id="exitTab" onAction="#closeApp" prefHeight="73.0" prefWidth="113.0" styleClass="a" stylesheets="@../style.css" text="Exit" />
+         </children>
+      </HBox>
+      <Pane layoutX="22.0" layoutY="77.0" prefHeight="556.0" prefWidth="516.0">
+         <children>
+            <Text fx:id="matrixArea" layoutX="66.0" layoutY="126.0" strokeType="OUTSIDE" strokeWidth="0.0" />
+            <JFXButton layoutX="197.0" layoutY="478.0" onAction="#back" prefHeight="60.0" prefWidth="120.0" style="-fx-background-color: #689df2;" text="Back" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </JFXButton>
+            <Text layoutX="128.0" layoutY="34.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Dynamic Programming Matrix">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+            </Text>
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>
